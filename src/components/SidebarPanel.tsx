@@ -17,9 +17,20 @@ const SidebarPanel = ({ title, children, initialCollapsed = false, initialPositi
   const [isDragging, setIsDragging] = useState(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const panelRef = useRef<HTMLDivElement>(null);
+  const initialPositionRef = useRef(initialPosition);
+  
+  // Добавляем состояние для отслеживания прогресса пользователя
+  const [progress, setProgress] = useState({
+    eventsViewed: 0,
+    routesCompleted: 0,
+    timeSpent: 0 // в минутах
+  });
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
+    if (!isCollapsed) {
+      setPosition(initialPositionRef.current);
+    }
   };
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -27,7 +38,7 @@ const SidebarPanel = ({ title, children, initialCollapsed = false, initialPositi
       const rect = panelRef.current.getBoundingClientRect();
       dragOffset.current = {
         x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+        y: e.clientY - rect.top + 40, // Adjust this value to change the vertical offset
       };
       setIsDragging(true);
     }
@@ -47,13 +58,13 @@ const SidebarPanel = ({ title, children, initialCollapsed = false, initialPositi
     if (panelRef.current) {
       const { offsetWidth, offsetHeight } = panelRef.current;
       const { innerWidth, innerHeight } = window;
-
+      
       let newX = position.x;
       let newY = position.y;
-
+      
       // Snapping logic (within a threshold, e.g., 20px from edge)
       const snapThreshold = 20;
-
+      
       // Snap to left edge
       if (newX < snapThreshold) {
         newX = 0;
@@ -62,7 +73,7 @@ const SidebarPanel = ({ title, children, initialCollapsed = false, initialPositi
       else if (newX > innerWidth - offsetWidth - snapThreshold) {
         newX = innerWidth - offsetWidth;
       }
-
+      
       // Snapping to top edge (considering header height, assuming header is 64px)
       const headerHeight = 64;
       if (newY < headerHeight + snapThreshold) {
@@ -72,6 +83,7 @@ const SidebarPanel = ({ title, children, initialCollapsed = false, initialPositi
       else if (newY > innerHeight - offsetHeight - timeSliderHeight - snapThreshold) {
         newY = innerHeight - offsetHeight - timeSliderHeight - 10; // 10px padding from time slider
       }
+
       
       setPosition({ x: newX, y: newY });
     }
@@ -91,10 +103,26 @@ const SidebarPanel = ({ title, children, initialCollapsed = false, initialPositi
     };
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
+  // Функция для обновления прогресса пользователя
+  const updateProgress = (eventType: string) => {
+    setProgress(prev => {
+      switch(eventType) {
+        case 'event_viewed':
+          return {...prev, eventsViewed: prev.eventsViewed + 1};
+        case 'route_completed':
+          return {...prev, routesCompleted: prev.routesCompleted + 1};
+        case 'time_spent':
+          return {...prev, timeSpent: prev.timeSpent + 1}; // условное увеличение времени
+        default:
+          return prev;
+      }
+    });
+  };
+
   return (
     <div
       ref={panelRef}
-      className="bg-white bg-opacity-90 p-4 rounded-lg shadow-lg mb-4 cursor-grab"
+      className="bg-white bg-opacity-90 p-4 rounded-lg shadow-lg mb-4 cursor-grab sidebar-panel"
       style={{
         position: 'absolute',
         transform: `translate(${position.x}px, ${position.y}px)`,
@@ -116,7 +144,20 @@ const SidebarPanel = ({ title, children, initialCollapsed = false, initialPositi
           )}
         </button>
       </div>
-      {!isCollapsed && <div className="mt-2">{children}</div>}
+      {!isCollapsed && (
+        <div className="mt-2">
+          {children}
+          {/* Отображение прогресса пользователя */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <h3 className="font-semibold text-sm">Ваш прогресс:</h3>
+            <div className="text-xs text-gray-600 mt-1">
+              <p>Просмотрено событий: {progress.eventsViewed}</p>
+              <p>Пройдено маршрутов: {progress.routesCompleted}</p>
+              <p>Время в приложении: {progress.timeSpent} мин</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -11,7 +11,6 @@ interface Layer {
 const LayerControl = () => {
   const [layers, setLayers] = useState<Layer[]>([
     { id: 'events', name: 'Исторические события', visible: true },
-    { id: 'borders', name: 'Границы государств', visible: true },
     { id: 'routes', name: 'Торговые пути', visible: false },
     { id: 'cities', name: 'Исторические города', visible: false },
   ]);

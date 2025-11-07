@@ -65,6 +65,28 @@ const EducationalRoutes = ({ onPanToEvent }: EducationalRoutesProps) => {
         { title: 'Февральская революция', latitude: 59.9343, longitude: 30.3351 }
       ],
       duration: '1914-1917 гг.'
+    },
+    {
+      id: 'revolution',
+      title: 'Революции начала XX века',
+      description: 'События 1905 и 1917 годов, приведшие к падению монархии',
+      events: [
+        { title: 'Революция 1905', latitude: 55.7558, longitude: 37.6173 },
+        { title: 'Февральская революция', latitude: 59.9343, longitude: 30.3351 },
+        { title: 'Октябрьская революция', latitude: 55.7558, longitude: 37.6173 }
+      ],
+      duration: '1905-1917 гг.'
+    },
+    {
+      id: 'war_of_1812',
+      title: 'Отечественная война 1812 года',
+      description: 'Сражения и события Отечественной войны 1812 года',
+      events: [
+        { title: 'Сражение при Смоленске', latitude: 54.7833, longitude: 32.0500 },
+        { title: 'Бородинское сражение', latitude: 55.2908, longitude: 36.5731 },
+        { title: 'Тарутинский маневр', latitude: 55.1000, longitude: 36.8000 }
+      ],
+      duration: '1812 г.'
     }
   ]);
 

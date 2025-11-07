@@ -13,7 +13,6 @@ const TimeSlider = dynamic(() => import('@/components/TimeSlider'), { ssr: false
 const EventInfoPanel = dynamic(() => import('@/components/EventInfoPanel'), { ssr: false });
 const SidebarPanel = dynamic(() => import('@/components/SidebarPanel'), { ssr: false });
 const LayerControl = dynamic(() => import('@/components/LayerControl'), { ssr: false });
-const SearchPanel = dynamic(() => import('@/components/SearchPanel'), { ssr: false });
 const EducationalRoutes = dynamic(() => import('@/components/EducationalRoutes'), { ssr: false });
 const Header = dynamic(() => import('@/components/Header'), { ssr: false });
 
@@ -85,7 +84,7 @@ const HistoricalMap = () => {
           ]}
           onSelectYear={setSelectedYear}
         />
-        {/* <HistoricalBordersLayer selectedYear={selectedYear} /> */}
+        <HistoricalBordersLayer selectedYear={selectedYear} />
       </MapContainer>
       <div ref={timeSliderRef}>
         <TimeSlider onPeriodChange={handlePeriodChange} onPanToEvent={handlePanToEvent} selectedYear={selectedYear} />
@@ -94,14 +93,11 @@ const HistoricalMap = () => {
         <SidebarPanel title="Информация о событии" initialCollapsed={true} initialPosition={{ x: 16, y: 80 }} timeSliderHeight={timeSliderHeight}>
           <EventInfoPanel onPanToEvent={handlePanToEvent} />
         </SidebarPanel>
-        <SidebarPanel title="Образовательные маршруты" initialPosition={{ x: 16, y: 350 }} timeSliderHeight={timeSliderHeight}>
+        <SidebarPanel title="Образовательные маршруты" initialPosition={{ x: 16, y: 450 }} timeSliderHeight={timeSliderHeight}>
           <EducationalRoutes onPanToEvent={handlePanToEvent} />
         </SidebarPanel>
       </div>
       <LayerControl />
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-full max-w-md">
-        <SearchPanel />
-      </div>
     </div>
   );
 };

@@ -55,6 +55,36 @@ const EventInfoPanel = ({ onPanToEvent }: EventInfoPanelProps) => {
   ];
 
   const [selectedEvent, setSelectedEvent] = useState<HistoricalEvent | null>(sampleEvents[0]);
+  
+  // Добавляем состояние для комментариев
+  const [comments, setComments] = useState<{[key: number]: string[]}>({
+    1: ["Очень важное событие в истории России", "Первый шаг к объединению русских земель"],
+    2: ["Начало становления Москвы как политического центра"],
+    3: ["Поворотный момент в борьбе с Ордой"]
+  });
+  
+  // Добавляем состояние для нового комментария
+  const [newComment, setNewComment] = useState('');
+  
+  // Система рекомендаций похожих событий
+  const getRecommendedEvents = (event: HistoricalEvent): HistoricalEvent[] => {
+    // Рекомендации на основе типа события, даты и региона
+    return sampleEvents.filter(e =>
+      e.id !== event.id &&
+      (Math.abs(parseInt(e.date.split(' ')[0]) - parseInt(event.date.split(' ')[0])) < 100)
+    ).slice(0, 2); // Ограничиваем до 2 рекомендаций
+  };
+  
+  // Функция для добавления комментария
+  const handleAddComment = () => {
+    if (newComment.trim() && selectedEvent) {
+      setComments(prev => ({
+        ...prev,
+        [selectedEvent.id]: [...(prev[selectedEvent.id] || []), newComment.trim()]
+      }));
+      setNewComment('');
+    }
+  };
 
   return (
     selectedEvent ? (
@@ -91,6 +121,20 @@ const EventInfoPanel = ({ onPanToEvent }: EventInfoPanelProps) => {
             ))}
           </ul>
         </div>
+
+        {/* Рекомендации похожих событий */}
+        <div className="mt-4">
+          <h3 className="font-semibold text-gray-800 mb-2">Похожие события:</h3>
+          <ul className="list-disc pl-5">
+            {getRecommendedEvents(selectedEvent).map((event) => (
+              <li key={`rec-${event.id}`} className="cursor-pointer text-blue-600 hover:underline"
+                onClick={() => setSelectedEvent(event)}>
+                {event.title} ({event.date})
+              </li>
+            ))}
+          </ul>
+        </div>
+
         {selectedEvent && (
           <button
             className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition-colors"
@@ -101,6 +145,64 @@ const EventInfoPanel = ({ onPanToEvent }: EventInfoPanelProps) => {
             Показать на карте
           </button>
         )}
+        
+        {/* Кнопка шэринга контента */}
+        <div className="mt-4">
+          <button
+            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
+            onClick={() => {
+              if (selectedEvent) {
+                // Функция для шэринга события
+                const shareData = {
+                  title: selectedEvent.title,
+                  text: `${selectedEvent.title} (${selectedEvent.date}): ${selectedEvent.description}`,
+                  url: window.location.href
+                };
+                
+                if (navigator.share) {
+                  navigator.share(shareData);
+                } else {
+                  // Резервный вариант для копирования ссылки
+                  const link = `${window.location.origin}/event/${selectedEvent.id}`;
+                  navigator.clipboard.writeText(link).then(() => {
+                    alert('Ссылка на событие скопирована в буфер обмена!');
+                  });
+                }
+              }
+            }}
+          >
+            Поделиться событием
+          </button>
+        </div>
+        
+        {/* Комментарии к историческим событиям */}
+        <div className="mt-6">
+          <h3 className="font-semibold text-gray-800 mb-2">Комментарии:</h3>
+          <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
+            {(comments[selectedEvent.id] || []).map((comment, index) => (
+              <div key={index} className="text-sm bg-gray-100 p-2 rounded">
+                {comment}
+              </div>
+            ))}
+          </div>
+          
+          <div className="mt-3 flex">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Добавить комментарий..."
+              className="flex-1 border border-gray-300 rounded-l px-3 py-1 text-sm"
+              onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+            />
+            <button
+              onClick={handleAddComment}
+              className="bg-blue-500 text-white px-3 py-1 rounded-r text-sm hover:bg-blue-600"
+            >
+              Отправить
+            </button>
+          </div>
+        </div>
       </div>
     ) : (
       <p className="text-gray-700">Выберите событие на карте, чтобы увидеть информацию о нем.</p>
