@@ -29,6 +29,8 @@ interface HistoricalEventsLayerProps {
   onSelectYear?: (year: number) => void; // New prop for selecting year
 }
 
+import { campaignPaths, tradeRoutes } from '@/data/mapData';
+
 const HistoricalEventsLayer = ({ panToEvent, onPanToEvent, timePeriods, onSelectYear }: HistoricalEventsLayerProps) => {
   const createPeriodIcon = (label: string) => {
     return L.divIcon({
@@ -131,52 +133,6 @@ const HistoricalEventsLayer = ({ panToEvent, onPanToEvent, timePeriods, onSelect
 
   // Анимация военных кампаний и походов
   const animateCampaigns = () => {
-    // Визуализация военных кампаний и походов
-    // Временные точки для анимации
-    const campaignPaths = [
-      {
-        id: 'napoleonic_campaign',
-        year: 1812,
-        name: 'Отечественная война 1812 года',
-        path: [
-          [55.75, 37.62], // Москва
-          [53.90, 27.56], // Минск
-          [52.42, 31.03], // Гомель
-          [51.51, 31.29], // Речица
-          [50.45, 30.52], // Киев
-          [55.75, 37.62], // Москва
-        ],
-        color: '#E53E', // Красный для военных действий
-      },
-      {
-        id: 'mongol_invasion',
-        year: 1240,
-        name: 'Монгольское нашествие',
-        path: [
-          [50.45, 30.52], // Киев
-          [48.47, 35.04], // Харьков
-          [47.84, 35.14], // Лозовая
-          [47.4, 33.42], // Славянск
-          [44.95, 34.11], // Симферополь
-        ],
-        color: '#8B000', // Темно-красный для нашествия
-      },
-      {
-        id: 'peter_campaign',
-        year: 1709,
-        name: 'Походы Петра I',
-        path: [
-          [59.93, 30.31], // Санкт-Петербург
-          [54.84, 37.62], // Рязань
-          [55.75, 37.62], // Москва
-          [51.67, 39.21], // Воронеж
-          [47.23, 39.71], // Ростов-на-Дону
-          [45.04, 38.98], // Краснодар
-        ],
-        color: '#D69E2E', // Желтый для походов
-      },
-    ];
-
     return campaignPaths.map((campaign, index) => {
       if (timePeriods && timePeriods.some(p => p.year >= campaign.year - 10 && p.year <= campaign.year + 10)) {
         return (
@@ -196,49 +152,6 @@ const HistoricalEventsLayer = ({ panToEvent, onPanToEvent, timePeriods, onSelect
 
   // Анимация торговых и культурных связей
   const animateTradeRoutes = () => {
-    // Визуализация торговых путей и культурных связей
-    const tradeRoutes = [
-      {
-        id: 'route_from_varangians',
-        year: 862,
-        name: 'Путь из варяг в греки',
-        path: [
-          [59.93, 30.31], // Санкт-Петербург (Новгород)
-          [58.59, 31.31], // Старая Русса
-          [56.14, 38.19], // Ростов
-          [55.88, 43.11], // Нижний Новгород
-          [55.75, 37.62], // Москва
-          [50.45, 30.52], // Киев
-          [46.47, 30.71], // Одесса
-        ],
-        color: '#38A169', // Зеленый для торговых путей
-      },
-      {
-        id: 'silk_route',
-        year: 1300,
-        name: 'Шелковый путь (русская часть)',
-        path: [
-          [55.45, 78.33], // Новосибирск
-          [54.98, 82.92], // Новониколаевск
-          [51.23, 85.18], // Горно-Алтайск
-          [43.59, 42.93], // Владикавказ
-          [41.69, 44.83], // Тбилиси
-        ],
-        color: '#D69E2E', // Желтый для торговых путей
-      },
-      {
-        id: 'white_sea_route',
-        year: 1100,
-        name: 'Беломорский путь',
-        path: [
-          [64.56, 39.83], // Архангельск
-          [62.01, 32.56], // Плесецк
-          [59.93, 30.31], // Санкт-Петербург (Новгород)
-        ],
-        color: '#4299E1', // Синий для морских путей
-      },
-    ];
-
     return tradeRoutes.map((route, index) => {
       if (timePeriods && timePeriods.some(p => p.year >= route.year - 20 && p.year <= route.year + 200)) {
         return (

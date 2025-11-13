@@ -24,14 +24,11 @@ interface City {
   longitude: number;
 }
 
-const cities: City[] = [
-  { id: 1, name: "Киев", founded: "482", description: "Древняя столица Руси, один из старейших городов Восточной Европы.", latitude: 50.4501, longitude: 30.5234 },
-  { id: 2, name: "Новгород", founded: "859", description: "Важный торговый и политический центр средневековой Руси.", latitude: 58.521, longitude: 31.275 },
-  { id: 3, name: "Москва", founded: "1147", description: "Столица России, один из крупнейших городов мира.", latitude: 55.7558, longitude: 37.6173 },
-  { id: 4, name: "Санкт-Петербург", founded: "1703", description: "Культурная столица России, основанная Петром I.", latitude: 59.9343, longitude: 30.3351 },
-];
+interface HistoricalCitiesLayerProps {
+  cities: City[];
+}
 
-const HistoricalCitiesLayer = () => {
+const HistoricalCitiesLayer: React.FC<HistoricalCitiesLayerProps> = ({ cities }) => {
   return (
     <>
       {cities.map(city => (

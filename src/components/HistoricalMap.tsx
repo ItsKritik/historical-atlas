@@ -4,8 +4,9 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import dynamic from 'next/dynamic';
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import Snowfall from './Snowfall';
+import { timePeriods, educationalRoutes, cities } from '@/data/mapData';
 
 // Dynamically import Leaflet-related components to ensure they are client-side rendered
 const HistoricalEventsLayer = dynamic(() => import('@/components/HistoricalEventsLayer'), { ssr: false });
@@ -17,6 +18,7 @@ const LayerControl = dynamic(() => import('@/components/LayerControl'), { ssr: f
 const EducationalRoutes = dynamic(() => import('@/components/EducationalRoutes'), { ssr: false });
 const Header = dynamic(() => import('@/components/Header'), { ssr: false });
 const HistoricalCitiesLayer = dynamic(() => import('@/components/HistoricalCitiesLayer'), { ssr: false });
+const SearchResults = dynamic(() => import('@/components/SearchResults'), { ssr: false });
 
 
 // Исправляем проблему с иконками маркеров в Leaflet
@@ -36,6 +38,46 @@ const HistoricalMap = () => {
     routes: true,
     cities: true,
   });
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handlePanToEvent = useCallback((latitude: number, longitude: number) => {
+    setEventToPan({ latitude, longitude });
+  }, []);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery) return [];
+
+    const lowerCaseQuery = searchQuery.toLowerCase();
+
+    const eventResults = timePeriods
+      .filter(event => event.label.toLowerCase().includes(lowerCaseQuery) || event.description.toLowerCase().includes(lowerCaseQuery))
+      .map(event => ({
+        id: `event-${event.year}`,
+        type: 'event' as const,
+        title: event.label,
+        onClick: () => handlePanToEvent(event.latitude!, event.longitude!),
+      }));
+
+    const cityResults = cities
+      .filter(city => city.name.toLowerCase().includes(lowerCaseQuery) || city.description.toLowerCase().includes(lowerCaseQuery))
+      .map(city => ({
+        id: `city-${city.id}`,
+        type: 'city' as const,
+        title: city.name,
+        onClick: () => handlePanToEvent(city.latitude, city.longitude),
+      }));
+
+    const routeResults = educationalRoutes
+      .filter(route => route.title.toLowerCase().includes(lowerCaseQuery) || route.description.toLowerCase().includes(lowerCaseQuery))
+      .map(route => ({
+        id: `route-${route.id}`,
+        type: 'route' as const,
+        title: route.title,
+        onClick: () => handlePanToEvent(route.events[0].latitude, route.events[0].longitude),
+      }));
+
+    return [...eventResults, ...cityResults, ...routeResults];
+  }, [searchQuery, handlePanToEvent]);
 
   const timeSliderRef = useRef<HTMLDivElement>(null);
   const [timeSliderHeight, setTimeSliderHeight] = useState(0);
@@ -50,14 +92,11 @@ const HistoricalMap = () => {
     setSelectedYear(year);
   };
 
-  const handlePanToEvent = useCallback((latitude: number, longitude: number) => {
-    setEventToPan({ latitude, longitude });
-  }, []);
 
   return (
     <div className={`h-screen w-full relative bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`}>
       <Snowfall />
-      <Header />
+      <Header onSearch={setSearchQuery} />
       <MapContainer
         center={center}
         zoom={3}
@@ -79,21 +118,11 @@ const HistoricalMap = () => {
         {layers.events && <HistoricalEventsLayer
           panToEvent={eventToPan}
           onPanToEvent={handlePanToEvent}
-          timePeriods={[
-            { year: 862, label: "Начало Руси", description: "Объединение славянских племен", latitude: 50.4501, longitude: 30.5234 },
-            { year: 988, label: "Крещение Руси", description: "Принятие христианства князем Владимиром", latitude: 50.4501, longitude: 30.5234 },
-            { year: 1240, label: "Монгольское нашествие", description: "Захват Киева монголами", latitude: 50.4501, longitude: 30.5234 },
-            { year: 1480, label: "Стояние на Угре", description: "Освобождение от ордынского ига", latitude: 55.0000, longitude: 38.0000 },
-            { year: 1703, label: "Основание Петербурга", description: "Начало эпохи Петра I", latitude: 59.9343, longitude: 30.3351 },
-            { year: 1812, label: "Отечественная война", description: "Война с Наполеоном", latitude: 55.7558, longitude: 37.6173 },
-            { year: 1917, label: "Революция", description: "Падение монархии", latitude: 55.7558, longitude: 37.6173 },
-            { year: 1941, label: "Великая Отечественная", description: "Война с нацистской Германией", latitude: 55.7558, longitude: 37.6173 },
-            { year: 1991, label: "Новейшее время", description: "Распад СССР", latitude: 55.7558, longitude: 37.6173 },
-          ]}
+          timePeriods={timePeriods}
           onSelectYear={setSelectedYear}
         />}
         {/* <HistoricalBordersLayer selectedYear={selectedYear} /> */}
-        {layers.cities && <HistoricalCitiesLayer />}
+        {layers.cities && <HistoricalCitiesLayer cities={cities} />}
       </MapContainer>
       <div ref={timeSliderRef}>
         <TimeSlider onPeriodChange={handlePeriodChange} onPanToEvent={handlePanToEvent} selectedYear={selectedYear} />
@@ -103,10 +132,11 @@ const HistoricalMap = () => {
           <EventInfoPanel onPanToEvent={handlePanToEvent} />
         </SidebarPanel>
         {layers.routes && <SidebarPanel title="Образовательные маршруты" initialCollapsed={true} initialPosition={{ x: 16, y: 140 }} timeSliderHeight={timeSliderHeight}>
-          <EducationalRoutes onPanToEvent={handlePanToEvent} />
+          <EducationalRoutes routes={educationalRoutes} onPanToEvent={handlePanToEvent} />
         </SidebarPanel>}
       </div>
       <LayerControl layers={layers} setLayers={setLayers} />
+      <SearchResults results={searchResults} />
     </div>
   );
 };
